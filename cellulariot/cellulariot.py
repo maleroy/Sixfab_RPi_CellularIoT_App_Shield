@@ -6,6 +6,7 @@
   Created by Yasin Kaya (selengalp), August 28, 2018.
 '''
 
+import re
 import time
 import serial
 import RPi.GPIO as GPIO
