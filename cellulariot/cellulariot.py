@@ -25,6 +25,8 @@ ser = serial.Serial()
 # Function for printing debug message 
 def debug_print(message):
 	print(message)
+	#ith open('logTest.txt','a') as a_writer:
+        #	a_writer.write(message+"\n")
 
 # Function for getting time as miliseconds
 def millis():
@@ -92,6 +94,22 @@ class CellularIoT:
 	
 	# Special Characters
 	CTRL_Z = '\x1A'
+	
+	# GPS Fix type dictionary
+	GPS_FIX_DICT = {'0':'Invalid',
+                        '1':'GPS Fix (SPS)',
+                        '2':'DGPS Fix',
+                        '3':'PPS Fix',
+                        '4':'Real Time Kinematic',
+                        '5':'Float RTK',
+                        '6':'Estimated (dead reckoning)',
+                        '7':'Manual input mode',
+                        '8':'Simulation mode',
+                        'A':'Autonomous',
+                        'D':'Differential',
+                        'E':'Estimated',
+                        'N':'Not valid',
+                        'S':'Simulator'}
 	
 	# Initializer function
 	def __init__(self, serial_port="/dev/ttyS0", serial_baudrate=115200, board="Sixfab Raspberry Pi Cellular IoT Shield"):
@@ -472,6 +490,163 @@ class CellularIoT:
 	# Function for getting fixed location 
 	def getFixedLocation(self):
 		return self.sendATComm("AT+QGPSLOC?","+QGPSLOC:")
+
+	# Function for getting NMEA GGA sentence 
+	def getNMEAGGA(self):
+		self.sendATComm("ATE0","OK\r\n")
+		self.sendATCommOnce("AT+QGPSGNMEA=\"GGA\"")
+		timer = millis()
+		d = {}
+		while 1:
+			self.response = ""
+			debug_print('in infinite loop')
+			while(ser.inWaiting()):
+				self.response += ser.readline().decode('utf-8')
+				debug_print('line read')
+				if( self.response.find("QGPSGNMEA") != -1 and self.response.find("OK") != -1 ):
+					self.response = self.response.split(",")
+					ser.close()
+					try:
+						lat_str = self.response[2]
+						lat = float(lat_str[0:2])+float(lat_str[2:])/60.
+						lon_str = self.response[4]
+						lon = float(lon_str[0:3])+float(lon_str[3:])/60.
+						d['utc'] = self.response[1]
+						d['lat'] = lat if self.response[3]=='N' else -lat
+						d['lon'] = lon if self.response[5]=='E' else -lon
+						d['fix'] = self.GPS_FIX_DICT[self.response[6]]
+						d['sat'] = int(self.response[7])
+						d['dil'] = float(self.response[8])
+						d['alt'] = float(self.response[9])
+						d['geo'] = float(self.response[11])
+					except:
+						debug_print(self.response)
+					return d
+				if(self.response.find("\r\n") != -1 and self.response.find("ERROR") != -1 ):
+					debug_print(self.response)
+					ser.close()
+					return 0
+
+	# Function for getting NMEA RMC sentence 
+	def getNMEARMC(self):
+		self.sendATComm("ATE0","OK\r\n")
+		self.sendATCommOnce("AT+QGPSGNMEA=\"RMC\"")
+		timer = millis()
+		d = {}
+		while 1:
+			self.response = ""
+			while(ser.inWaiting()):
+				self.response += ser.readline().decode('utf-8')
+				if( self.response.find("QGPSGNMEA") != -1 and self.response.find("OK") != -1 ):
+					self.response = self.response.split(",")
+					ser.close()
+					try:
+						lat_str = self.response[3]
+						lat = float(lat_str[0:2])+float(lat_str[2:])/60.
+						lon_str = self.response[5]
+						lon = float(lon_str[0:3])+float(lon_str[3:])/60.
+						d['utc'] = self.response[1]
+						d['status'] = self.response[2]
+						d['lat'] = lat if self.response[4]=='N' else -lat
+						d['lon'] = lon if self.response[6]=='E' else -lon
+						d['speed_kn'] = float(self.response[7])
+						d['track_angle_deg'] = float(self.response[8])
+						d['date'] = self.response[9]
+						mag_var = float(self.response[10])
+						d['mag_var'] = mag_var if self.response[11]=='E' else -mag_var 
+						d['fix'] = self.GPS_FIX_DICT[self.response[12][0]] 
+					except:
+						debug_print(self.response)
+					return d
+				if(self.response.find("\r\n") != -1 and self.response.find("ERROR") != -1 ):
+					debug_print(self.response)
+					ser.close()
+					return 0
+	
+	# Function for getting NMEA GSV sentence # TO BE COMPLETED 
+	def getNMEAGSV(self):
+		self.sendATComm("ATE0","OK\r\n")
+		self.sendATCommOnce("AT+QGPSGNMEA=\"GSV\"")
+		timer = millis()
+		d = {}
+		while 1:
+			self.response = ""
+			while(ser.inWaiting()):
+				self.response += ser.readline().decode('utf-8')
+				if( self.response.find("QGPSGNMEA") != -1 and self.response.find("OK") != -1 ):
+					self.response = re.split(",|\r\n\+QGPSGNMEA: \$GPGSV,|\*",self.response)
+					ser.close()
+					try:
+						nsats = int(self.response[3])
+						ranges = list(range(4,nsats*5+4,4))
+						ctr=-1
+						for i in range(nsats):
+							if i%4==0:
+								ctr+=1
+							debug_print(self.response[ranges[i+ctr]:ranges[i+ctr+1]])
+						debug_print("Done")#['fix'] = self.GPS_FIX_DICT[self.response[99]] 
+					except:
+						debug_print(self.response) 
+					return d
+				if(self.response.find("\r\n") != -1 and self.response.find("ERROR") != -1 ):
+					debug_print(self.response)
+					ser.close()
+					return 0
+	
+	# Function for getting NMEA GSA sentence
+	def getNMEAGSA(self):
+		self.sendATComm("ATE0","OK\r\n")
+		self.sendATCommOnce("AT+QGPSGNMEA=\"GSA\"")
+		timer = millis()
+		d = {}
+		while 1:
+			self.response = ""
+			while(ser.inWaiting()):
+				self.response += ser.readline().decode('utf-8')
+				if( self.response.find("QGPSGNMEA") != -1 and self.response.find("OK") != -1 ):
+					self.response = self.response.split(",")
+					ser.close()
+					try:
+						d['fix_selection'] = 'Auto-selection' if self.response[1]=='A' else 'Manual'
+						d['fix_none_2_or_3'] = self.response[2] 
+						d['prn_sats_used_for_fix'] = list(filter(None,self.response[3:15]))
+						d['pdop'] = float(self.response[15])
+						d['hdop'] = float(self.response[16])
+						d['vdop'] = float(self.response[17].split("*")[0]) 
+					except:
+						debug_print(self.response)
+					return d
+				if(self.response.find("\r\n") != -1 and self.response.find("ERROR") != -1 ):
+					debug_print(self.response)
+					ser.close()
+					return 0
+
+	# Function for getting NMEA VTG sentence 
+	def getNMEAVTG(self):
+		self.sendATComm("ATE0","OK\r\n")
+		self.sendATCommOnce("AT+QGPSGNMEA=\"VTG\"")
+		timer = millis()
+		d = {}
+		while 1:
+			self.response = ""
+			while(ser.inWaiting()):
+				self.response += ser.readline().decode('utf-8')
+				if( self.response.find("QGPSGNMEA") != -1 and self.response.find("OK") != -1 ):
+					self.response = self.response.split(",")
+					ser.close()
+					try:
+						d['true_track_made_good_deg'] = float(self.response[1])
+						d['mag_track_made_good_deg'] = float(self.response[3])
+						d['gnd_speed_kn'] = float(self.response[5])
+						d['gnd_speed_km_per_h'] = float(self.response[7])
+						d['fix'] = self.GPS_FIX_DICT[self.response[9][0]] 
+					except:
+						debug_print(self.response)
+					return d
+				if(self.response.find("\r\n") != -1 and self.response.find("ERROR") != -1 ):
+					debug_print(self.response)
+					ser.close()
+					return 0
 
 	#******************************************************************************************
 	#*** TCP & UDP Protocols Functions ********************************************************
