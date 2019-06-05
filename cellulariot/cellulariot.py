@@ -583,8 +583,7 @@ class CellularIoT:
                         for i in range(nsats):
                             if i%4==0:
                                 ctr+=1
-                            debug_print(self.response[ranges[i+ctr]:ranges[i+ctr+1]])
-                        debug_print("Done")#['fix'] = self.GPS_FIX_DICT[self.response[99]] 
+                            d[i+1] = self.response[ranges[i+ctr]:ranges[i+ctr+1]]
                     except:
                         debug_print(self.response) 
                     return d
