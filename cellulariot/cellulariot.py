@@ -571,14 +571,15 @@ class CellularIoT:
     # Function for parsing GNSS satellites in view data
     def parseNMEAGSV(self,message):
         d={}
-        message = re.split('\r\n',message)
+        s = re.split('\r\n',message)
         debug_print(message)
         ctrs=[]
         d_c = {}
         n_gnss = 0
-        for i in range(len(message)):
-            if re.search('QGPSGNMEA', message[i]):
-                k = re.split('\+QGPSGNMEA: \$|,|\*',message[i])
+        for i in range(len(s)):
+            if re.search('QGPSGNMEA', s[i]):
+                debug_print(s[i])
+                k = re.split('\+QGPSGNMEA: \$|,|\*',s[i])
                 n = int(0.25*(len(k)-6))
                 gnss = k[1]
                 debug_print(k,n,gnss)
