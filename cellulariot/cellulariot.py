@@ -96,20 +96,25 @@ class CellularIoT:
     CTRL_Z = '\x1A'
     
     # GPS Fix type dictionary
-    GPS_FIX_DICT = {'0':'Invalid',
-                        '1':'GPS Fix (SPS)',
-                        '2':'DGPS Fix',
-                        '3':'PPS Fix',
-                        '4':'Real Time Kinematic',
-                        '5':'Float RTK',
-                        '6':'Estimated (dead reckoning)',
-                        '7':'Manual input mode',
-                        '8':'Simulation mode',
-                        'A':'Autonomous',
-                        'D':'Differential',
-                        'E':'Estimated',
-                        'N':'Not valid',
-                        'S':'Simulator'}
+    GNSS_FIX_DICT = {'0':'Invalid',
+                     '1':'GPS Fix (SPS)',
+                     '2':'DGPS Fix',
+                     '3':'PPS Fix',
+                     '4':'Real Time Kinematic',
+                     '5':'Float RTK',
+                     '6':'Estimated (dead reckoning)',
+                     '7':'Manual input mode',
+                     '8':'Simulation mode',
+                     'A':'Autonomous',
+                     'D':'Differential',
+                     'E':'Estimated',
+                     'N':'Not valid',
+                     'S':'Simulator'}
+
+    GNSS_GSV_CONST = {'GPGSV':'GPS', 
+                      'GAGSV':'Galileo',
+                      'GLGSV':'GLONASS',
+                      'PQGSV':'BeiDou'}
     
     # Initializer function
     def __init__(self, serial_port="/dev/ttyS0", serial_baudrate=115200, board="Sixfab Raspberry Pi Cellular IoT Shield"):
@@ -514,7 +519,7 @@ class CellularIoT:
                         d['utc'] = self.response[1]
                         d['lat'] = lat if self.response[3]=='N' else -lat
                         d['lon'] = lon if self.response[5]=='E' else -lon
-                        d['fix'] = self.GPS_FIX_DICT[self.response[6]]
+                        d['fix'] = self.GNSS_FIX_DICT[self.response[6]]
                         d['sat'] = int(self.response[7])
                         d['dil'] = float(self.response[8])
                         d['alt'] = float(self.response[9])
@@ -554,7 +559,7 @@ class CellularIoT:
                         d['date'] = self.response[9]
                         mag_var = float(self.response[10])
                         d['mag_var'] = mag_var if self.response[11]=='E' else -mag_var 
-                        d['fix'] = self.GPS_FIX_DICT[self.response[12][0]] 
+                        d['fix'] = self.GNSS_FIX_DICT[self.response[12][0]] 
                     except:
                         debug_print(self.response)
                     return d
@@ -562,8 +567,33 @@ class CellularIoT:
                     debug_print(self.response)
                     ser.close()
                     return 0
-    
-    # Function for getting NMEA GSV sentence # TO BE COMPLETED 
+ 
+    # Function for parsing GNSS satellites in view data
+    def parseNMEAGSV(self,message):
+        d={}
+        message = re.split('\r\n',message)
+        ctrs=[]
+        d_c = {}
+        n_gnss = 0
+        for i in range(len(message)):
+            if re.search('QGPSGNMEA', message[i]):
+                k = re.split('\+QGPSGNMEA: \$|,|\*',message[i])
+                n = int(0.25*(len(k)-6))
+                gnss = k[1]
+                
+                if self.GNSS_GSV_CONST[gnss] not in d.keys():
+                    d[self.GNSS_GSV_CONST[gnss]]={}
+                    ctrs.append(0)
+                    self.GNSS_GSV_CONST[gnss]=n_gnss
+                    n_gnss+=1
+                v = list(range(5,n*5+5,4))
+
+                for i in range(len(v)-1):
+                    d[self.GNSS_GSV_CONST[gnss]][ctrs[d_c[gnss]]]=k[v[i]:v[i+1]]
+                    ctrs[d_c[gnss]]+=1
+        return d
+
+    # Function for getting NMEA GSV sentence
     def getNMEAGSV(self):
         self.sendATComm("ATE0","OK\r\n")
         self.sendATCommOnce("AT+QGPSGNMEA=\"GSV\"")
@@ -576,9 +606,11 @@ class CellularIoT:
                 if( self.response.find("QGPSGNMEA") != -1 and self.response.find("OK") != -1 ):
                     debug_print("Message is:")
                     debug_print(self.response)
-                    self.response = re.split(",|\r\n\+QGPSGNMEA: \$GPGSV,|\*",self.response)
+                    #self.response = re.split(",|\r\n\+QGPSGNMEA: \$GPGSV,|\*",self.response)
                     ser.close()
                     try:
+                        d = self.parseNMEAGSV(self.response)
+                        """
                         nsats = int(self.response[3])
                         ranges = list(range(4,nsats*5+4,4))
                         ctr=-1
@@ -586,6 +618,7 @@ class CellularIoT:
                             if i%4==0:
                                 ctr+=1
                             d[i+1] = self.response[ranges[i+ctr]:ranges[i+ctr+1]]
+                        """
                     except:
                         debug_print(self.response) 
                     return d
@@ -640,7 +673,7 @@ class CellularIoT:
                         d['mag_track_made_good_deg'] = float(self.response[3])
                         d['gnd_speed_kn'] = float(self.response[5])
                         d['gnd_speed_km_per_h'] = float(self.response[7])
-                        d['fix'] = self.GPS_FIX_DICT[self.response[9][0]] 
+                        d['fix'] = self.GNSS_FIX_DICT[self.response[9][0]] 
                     except:
                         debug_print(self.response)
                     return d
