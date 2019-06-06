@@ -585,6 +585,7 @@ class CellularIoT:
                 debug_print(n)
                 gnss = k[1]
                 debug_print(gnss)
+                debug_print(self.GNSS_GSV_CONST[gnss])
                 
                 if self.GNSS_GSV_CONST[gnss] not in d.keys():
                     d[self.GNSS_GSV_CONST[gnss]]={}
