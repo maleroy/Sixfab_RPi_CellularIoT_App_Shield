@@ -604,8 +604,8 @@ class CellularIoT:
             while(ser.inWaiting()):
                 self.response += ser.readline().decode('utf-8')
                 if( self.response.find("QGPSGNMEA") != -1 and self.response.find("OK") != -1 ):
-                    debug_print("Message is:")
-                    debug_print(self.response)
+                    #ebug_print("Message is:")
+                    #ebug_print(self.response)
                     #self.response = re.split(",|\r\n\+QGPSGNMEA: \$GPGSV,|\*",self.response)
                     ser.close()
                     try:
@@ -620,7 +620,7 @@ class CellularIoT:
                             d[i+1] = self.response[ranges[i+ctr]:ranges[i+ctr+1]]
                         """
                     except:
-                        debug_print(self.response) 
+                        debug_print("Something went wrong when parsing GSV")#self.response) 
                     return d
                 if(self.response.find("\r\n") != -1 and self.response.find("ERROR") != -1 ):
                     debug_print(self.response)
