@@ -581,6 +581,7 @@ class CellularIoT:
                 k = re.split('\+QGPSGNMEA: \$|,|\*',message[i])
                 n = int(0.25*(len(k)-6))
                 gnss = k[1]
+                debug_print(k,n,gnss)
                 
                 if self.GNSS_GSV_CONST[gnss] not in d.keys():
                     d[self.GNSS_GSV_CONST[gnss]]={}
@@ -588,7 +589,7 @@ class CellularIoT:
                     self.GNSS_GSV_CONST[gnss]=n_gnss
                     n_gnss+=1
                 v = list(range(5,n*5+5,4))
-                debug_print(k,n,gnss,v)
+                debug_print(v)
 
                 for i in range(len(v)-1):
                     d[self.GNSS_GSV_CONST[gnss]][ctrs[d_c[gnss]]]=k[v[i]:v[i+1]]
