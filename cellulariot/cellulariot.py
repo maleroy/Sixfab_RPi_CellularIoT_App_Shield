@@ -574,6 +574,8 @@ class CellularIoT:
             while(ser.inWaiting()):
                 self.response += ser.readline().decode('utf-8')
                 if( self.response.find("QGPSGNMEA") != -1 and self.response.find("OK") != -1 ):
+                    debug_print("Message is:")
+                    debug_print(self.response)
                     self.response = re.split(",|\r\n\+QGPSGNMEA: \$GPGSV,|\*",self.response)
                     ser.close()
                     try:
