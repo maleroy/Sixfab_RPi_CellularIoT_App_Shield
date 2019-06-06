@@ -588,6 +588,7 @@ class CellularIoT:
                     self.GNSS_GSV_CONST[gnss]=n_gnss
                     n_gnss+=1
                 v = list(range(5,n*5+5,4))
+                debug_print(k,n,gnss,v)
 
                 for i in range(len(v)-1):
                     d[self.GNSS_GSV_CONST[gnss]][ctrs[d_c[gnss]]]=k[v[i]:v[i+1]]
