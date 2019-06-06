@@ -572,6 +572,7 @@ class CellularIoT:
     def parseNMEAGSV(self,message):
         d={}
         message = re.split('\r\n',message)
+        debug_print(message)
         ctrs=[]
         d_c = {}
         n_gnss = 0
