@@ -590,7 +590,7 @@ class CellularIoT:
                 if self.GNSS_GSV_CONST[gnss] not in d.keys():
                     d[self.GNSS_GSV_CONST[gnss]]={}
                     ctrs.append(0)
-                    self.GNSS_GSV_CONST[gnss]=n_gnss
+                    d_c[gnss]=n_gnss
                     n_gnss+=1
                 v = list(range(5,n*5+5,4))
                 debug_print(v)
