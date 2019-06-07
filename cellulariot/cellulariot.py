@@ -112,6 +112,10 @@ class CellularIoT:
                        'N':'Not valid',
                        'S':'Simulator'}
 
+    GNSS_GSA_FIX_MODE = {'1':'No fix',
+                         '2':'2D mode',
+                         '3':'3D mode'}
+
     GNSS_GSV_CONST = {'GPGSV':'GPS', 
                       'GAGSV':'Galileo',
                       'GLGSV':'GLONASS',
@@ -533,6 +537,48 @@ class CellularIoT:
                     ser.close()
                     return 0
 
+    # Function for getting NMEA GNS sentence 
+    def getNMEAGNS(self):
+        self.sendATComm("ATE0","OK\r\n")
+        self.sendATCommOnce("AT+QGPSGNMEA=\"GNS\"")
+        timer = millis()
+        d = {}
+        while 1:
+            self.response = ""
+            debug_print('in infinite loop')
+            while(ser.inWaiting()):
+                self.response += ser.readline().decode('utf-8')
+                debug_print('line read')
+                if( self.response.find("QGPSGNMEA") != -1 and self.response.find("OK") != -1 ):
+                    self.response = self.response.split(",")
+                    ser.close()
+                    try:
+                        lat_str = self.response[2]
+                        lat = float(lat_str[0:2])+float(lat_str[2:])/60.
+                        lon_str = self.response[4]
+                        lon = float(lon_str[0:3])+float(lon_str[3:])/60.
+                        d['utc'] = self.response[1]
+                        d['lat'] = lat if self.response[3]=='N' else -lat
+                        d['lon'] = lon if self.response[5]=='E' else -lon
+                        d['sat'] = int(self.response[7])
+                        d['dil'] = float(self.response[8])
+                        d['alt'] = float(self.response[9])
+                        d['geo'] = float(self.response[10])
+                        
+                        d['fix']={}
+                        fix = self.response[6]
+                        for i in range(len(fix)):
+                            d['fix'][self.GNSS_GNS_FIX_CONST[i]] = self.GNSS_OTHERS_FIX[fix[i]]
+                    
+                    except:
+                        debug_print(self.response)
+                    return d
+
+                if(self.response.find("\r\n") != -1 and self.response.find("ERROR") != -1 ):
+                    debug_print(self.response)
+                    ser.close()
+                    return 0
+
     # Function for getting NMEA RMC sentence 
     def getNMEARMC(self):
         self.sendATComm("ATE0","OK\r\n")
@@ -632,7 +678,7 @@ class CellularIoT:
                     ser.close()
                     try:
                         d['fix_selection'] = 'Auto-selection' if self.response[1]=='A' else 'Manual'
-                        d['fix_none_2_or_3'] = self.response[2] 
+                        d['fix_mode'] = self.GNSS_GSA_FIX_MODE[self.response[2]]
                         d['prn_sats_used_for_fix'] = list(filter(None,self.response[3:15]))
                         d['pdop'] = float(self.response[15])
                         d['hdop'] = float(self.response[16])
