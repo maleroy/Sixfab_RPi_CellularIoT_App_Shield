@@ -509,10 +509,8 @@ class CellularIoT:
         d = {}
         while 1:
             self.response = ""
-            debug_print('in infinite loop')
             while(ser.inWaiting()):
                 self.response += ser.readline().decode('utf-8')
-                debug_print('line read')
                 if( self.response.find("QGPSGNMEA") != -1 and self.response.find("OK") != -1 ):
                     self.response = self.response.split(",")
                     ser.close()
@@ -545,10 +543,8 @@ class CellularIoT:
         d = {}
         while 1:
             self.response = ""
-            debug_print('in infinite loop')
             while(ser.inWaiting()):
                 self.response += ser.readline().decode('utf-8')
-                debug_print('line read')
                 if( self.response.find("QGPSGNMEA") != -1 and self.response.find("OK") != -1 ):
                     self.response = self.response.split(",")
                     ser.close()
