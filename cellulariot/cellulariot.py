@@ -504,7 +504,7 @@ class CellularIoT:
     # Function for getting NMEA GGA sentence 
     def getNMEAGGA(self):
         self.sendATComm("ATE0","OK\r\n")
-        self.sendATComm("AT+QGPSGNMEA=\"GGA\"","+QGPSGNMEA:")
+        self.sendATComm("AT+QGPSGNMEA=\"GGA\"","OK\r\n")
         timer = millis()
         d = {}
         while 1:
@@ -542,7 +542,7 @@ class CellularIoT:
     # Function for getting NMEA GNS sentence 
     def getNMEAGNS(self):
         self.sendATComm("ATE0","OK\r\n")
-        self.sendATComm("AT+QGPSGNMEA=\"GNS\"","+QGPSGNMEA:")
+        self.sendATComm("AT+QGPSGNMEA=\"GNS\"","OK\r\n")
         timer = millis()
         d = {}
         while 1:
@@ -586,7 +586,7 @@ class CellularIoT:
     # Function for getting NMEA RMC sentence 
     def getNMEARMC(self):
         self.sendATComm("ATE0","OK\r\n")
-        self.sendATComm("AT+QGPSGNMEA=\"RMC\"","+QGPSGNMEA:")
+        self.sendATComm("AT+QGPSGNMEA=\"RMC\"","OK\r\n")
         timer = millis()
         d = {}
         while 1:
@@ -652,7 +652,7 @@ class CellularIoT:
     # Function for getting NMEA GSV sentence
     def getNMEAGSV(self):
         self.sendATComm("ATE0","OK\r\n")
-        self.sendATComm("AT+QGPSGNMEA=\"GSV\"","+QGPSGNMEA:")
+        self.sendATComm("AT+QGPSGNMEA=\"GSV\"","OK\r\n")
         timer = millis()
         d = {}
         while 1:
@@ -678,7 +678,7 @@ class CellularIoT:
     # Function for getting NMEA GSA sentence
     def getNMEAGSA(self):
         self.sendATComm("ATE0","OK\r\n")
-        self.sendATComm("AT+QGPSGNMEA=\"GSA\"","+QGPSGNMEA:")
+        self.sendATComm("AT+QGPSGNMEA=\"GSA\"","OK\r\n")
         timer = millis()
         d = {}
         while 1:
@@ -710,7 +710,7 @@ class CellularIoT:
     # Function for getting NMEA VTG sentence 
     def getNMEAVTG(self):
         self.sendATComm("ATE0","OK\r\n")
-        self.sendATComm("AT+QGPSGNMEA=\"VTG\"","+QGPSGNMEA:")
+        self.sendATComm("AT+QGPSGNMEA=\"VTG\"","OK\r\n")
         timer = millis()
         d = {}
         while 1:
