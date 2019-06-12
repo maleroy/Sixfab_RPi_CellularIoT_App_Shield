@@ -508,7 +508,7 @@ class CellularIoT:
         timer = millis()
         d = {}
         while 1:
-            if( millis() - timer > timeout):
+            if( millis() - timer > TIMEOUT):
                 self.sendATCommOnce("AT+QGPSGNMEA=\"GGA\"")
                 timer = millis()
             self.response = ""
@@ -549,7 +549,7 @@ class CellularIoT:
         timer = millis()
         d = {}
         while 1:
-            if( millis() - timer > timeout):
+            if( millis() - timer > TIMEOUT):
                 self.sendATCommOnce("AT+QGPSGNMEA=\"GNS\"")
                 timer = millis()
             self.response = ""
@@ -596,7 +596,7 @@ class CellularIoT:
         timer = millis()
         d = {}
         while 1:
-            if( millis() - timer > timeout):
+            if( millis() - timer > TIMEOUT):
                 self.sendATCommOnce("AT+QGPSGNMEA=\"RMC\"")
                 timer = millis()
             self.response = ""
@@ -665,7 +665,7 @@ class CellularIoT:
         timer = millis()
         d = {}
         while 1:
-            if( millis() - timer > timeout):
+            if( millis() - timer > TIMEOUT):
                 self.sendATCommOnce("AT+QGPSGNMEA=\"GSV\"")
                 timer = millis()
             self.response = ""
@@ -694,7 +694,7 @@ class CellularIoT:
         timer = millis()
         d = {}
         while 1:
-            if( millis() - timer > timeout):
+            if( millis() - timer > TIMEOUT):
                 self.sendATCommOnce("AT+QGPSGNMEA=\"GSA\"")
                 timer = millis()
             self.response = ""
@@ -729,7 +729,7 @@ class CellularIoT:
         timer = millis()
         d = {}
         while 1:
-            if( millis() - timer > timeout):
+            if( millis() - timer > TIMEOUT):
                 self.sendATCommOnce("AT+QGPSGNMEA=\"VTG\"")
                 timer = millis()
             self.response = ""
