@@ -528,10 +528,10 @@ class CellularIoT:
                         d['alt'] = float(self.response[9])
                         d['geo'] = float(self.response[11])
                     except:
-                        debug_print(self.response)
+                        debug_print("Trouble parsing NMEA GGA: >>>"+self.response+"<<<")
                     return d
                 if(self.response.find("\r\n") != -1 and self.response.find("ERROR") != -1 ):
-                    debug_print(self.response)
+                    debug_print("ERROR in NMEA GGA response: >>>"+self.response+"<<<")
                     ser.close()
                     return 0
 
@@ -567,11 +567,11 @@ class CellularIoT:
                             d['fix'][self.GNSS_GNS_FIX_CONST[i]] = self.GNSS_OTHERS_FIX[fix[i]]
                     
                     except:
-                        debug_print(self.response)
+                        debug_print("Trouble parsing NMEA GNS: >>>"+self.response+"<<<")
                     return d
 
                 if(self.response.find("\r\n") != -1 and self.response.find("ERROR") != -1 ):
-                    debug_print(self.response)
+                    debug_print("ERROR in NMEA GNS response: >>>"+self.response+"<<<")
                     ser.close()
                     return 0
 
@@ -604,10 +604,10 @@ class CellularIoT:
                         d['mag_var'] = mag_var if self.response[11]=='E' else -mag_var 
                         d['fix'] = self.GNSS_OTHERS_FIX[self.response[12][0]] 
                     except:
-                        debug_print(self.response)
+                        debug_print("Trouble parsing NMEA RMC: >>>"+self.response+"<<<")
                     return d
                 if(self.response.find("\r\n") != -1 and self.response.find("ERROR") != -1 ):
-                    debug_print(self.response)
+                    debug_print("ERROR in NMEA RMC response: >>>"+self.response+"<<<")
                     ser.close()
                     return 0
  
@@ -652,10 +652,10 @@ class CellularIoT:
                     try:
                         d = self.parseNMEAGSV(self.response)
                     except:
-                        debug_print("Something went wrong while parsing GNSS GSV")
+                        debug_print("Trouble parsing NMEA GSV: >>>"+self.response+"<<<")
                     return d
                 if(self.response.find("\r\n") != -1 and self.response.find("ERROR") != -1 ):
-                    debug_print(self.response)
+                    debug_print("ERROR in NMEA GSV response: >>>"+self.response+"<<<")
                     ser.close()
                     return 0
     
@@ -680,10 +680,10 @@ class CellularIoT:
                         d['hdop'] = float(self.response[16])
                         d['vdop'] = float(self.response[17].split("*")[0]) 
                     except:
-                        debug_print(self.response)
+                        debug_print("Trouble parsing NMEA GSA: >>>"+self.response+"<<<")
                     return d
                 if(self.response.find("\r\n") != -1 and self.response.find("ERROR") != -1 ):
-                    debug_print(self.response)
+                    debug_print("ERROR in NMEA GSA response: >>>"+self.response+"<<<")
                     ser.close()
                     return 0
 
@@ -707,10 +707,10 @@ class CellularIoT:
                         d['gnd_speed_km_per_h'] = float(self.response[7])
                         d['fix'] = self.GNSS_OTHERS_FIX[self.response[9][0]] 
                     except:
-                        debug_print(self.response)
+                        debug_print("Trouble parsing NMEA VTG: >>>"+self.response+"<<<")
                     return d
                 if(self.response.find("\r\n") != -1 and self.response.find("ERROR") != -1 ):
-                    debug_print(self.response)
+                    debug_print("ERROR in NMEA VTG response: >>>"+self.response+"<<<")
                     ser.close()
                     return 0
 
