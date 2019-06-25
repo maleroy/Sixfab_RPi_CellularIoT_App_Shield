@@ -24,9 +24,9 @@ ser = serial.Serial()
 
 # Function for printing debug message 
 def debug_print(message):
-    print(message)
-    #ith open('logTest.txt','a') as a_writer:
-        #   a_writer.write(message+"\n")
+    # print(message)
+    with open('logsSixfabCellularIoT.txt', 'a') as a_writer:
+        a_writer.write(message+"\n")
 
 # Function for getting time as miliseconds
 def millis():
