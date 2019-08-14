@@ -16,6 +16,7 @@ from .MMA8452Q import MMA8452Q
 
 # global variables
 TIMEOUT = 3 # seconds
+MAX_ATTEMPTS = 5
 ser = serial.Serial()
 
 ###########################################
@@ -665,6 +666,8 @@ class CellularIoT:
         timer = millis()
         d = {}
         while 1:
+            if( millis() - timer > MAX_ATTEMPS*TIMEOUT):
+                break
             if( millis() - timer > TIMEOUT):
                 self.sendATCommOnce("AT+QGPSGNMEA=\"GSV\"")
                 timer = millis()
@@ -686,6 +689,7 @@ class CellularIoT:
                     debug_print("^^^")
                     ser.close()
                     return 0
+        return d
     
     # Function for getting NMEA GSA sentence
     def getNMEAGSA(self):
