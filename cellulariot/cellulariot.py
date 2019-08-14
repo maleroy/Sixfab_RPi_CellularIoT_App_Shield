@@ -666,7 +666,7 @@ class CellularIoT:
         timer = millis()
         d = {}
         while 1:
-            if( millis() - timer > MAX_ATTEMPS*TIMEOUT):
+            if( millis() - timer > MAX_ATTEMPTS*TIMEOUT):
                 break
             if( millis() - timer > TIMEOUT):
                 self.sendATCommOnce("AT+QGPSGNMEA=\"GSV\"")
