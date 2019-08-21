@@ -6,6 +6,7 @@
   Created by Yasin Kaya (selengalp), August 28, 2018.
 '''
 
+import os
 import re
 import time
 import serial
@@ -17,6 +18,8 @@ from .MMA8452Q import MMA8452Q
 # global variables
 TIMEOUT = 3 # seconds
 MAX_ATTEMPTS = 5
+LOG_DIR = '/data/log/'
+os.makedirs(LOG_DIR, exist_ok=True)
 ser = serial.Serial()
 
 ###########################################
@@ -24,10 +27,9 @@ ser = serial.Serial()
 ###########################################
 
 # Function for printing debug message 
-def debug_print(message):
-    # print(message)
-    with open('logsSixfabCellularIoT.txt', 'a') as a_writer:
-        a_writer.write(str(message)+"\n")
+def debug_print(log_file, message):
+    with open(log_file, 'a') as f:
+        f.write(str(message)+"\n")
 
 # Function for getting time as miliseconds
 def millis():
@@ -125,12 +127,13 @@ class CellularIoT:
     # Initializer function
     def __init__(self, serial_port="/dev/ttyS0", serial_baudrate=115200, board="Sixfab Raspberry Pi Cellular IoT Shield"):
         self.board = board
+        self.log_file = LOG_DIR + "sixfab_" + serial_port.split("/")[-1] + ".log"
         ser.port = serial_port
         ser.baudrate = serial_baudrate
         ser.parity=serial.PARITY_NONE
         ser.stopbits=serial.STOPBITS_ONE
         ser.bytesize=serial.EIGHTBITS
-        debug_print(self.board + " Class initialized!")
+        debug_print(self.log_file, self.board + " Class initialized!")
     
     def setupGPIO(self):
         GPIO.setmode(GPIO.BCM)
@@ -155,19 +158,19 @@ class CellularIoT:
     # Function for enable BG96 module
     def enable(self):
         GPIO.output(self.BG96_ENABLE,0)
-        debug_print("BG96 module enabled!")
+        debug_print(self.log_file, "BG96 module enabled!")
 
     # Function for powering down BG96 module and all peripherals from voltage regulator 
     def disable(self):
         GPIO.output(self.BG96_ENABLE,1)
-        debug_print("BG96 module disabled!")
+        debug_print(self.log_file, "BG96 module disabled!")
 
     # Function for powering up or down BG96 module
     def powerUp(self):
         GPIO.output(self.BG96_POWERKEY,1)
         while self.getModemStatus():
             pass
-        debug_print("BG96 module powered up!")
+        debug_print(self.log_file, "BG96 module powered up!")
         GPIO.output(self.BG96_POWERKEY,0)
 
     # Function for getting modem power status
@@ -183,7 +186,7 @@ class CellularIoT:
             while(ser.inWaiting()):
                 self.response += ser.read(ser.inWaiting()).decode('utf-8', errors='ignore')
             if(self.response.find(desired_response) != -1):
-                debug_print(self.response)
+                debug_print(self.log_file, self.response)
                 break
     
     # Function for sending data to module
@@ -194,7 +197,7 @@ class CellularIoT:
         self.compose = str(command)
         ser.reset_input_buffer()
         ser.write(self.compose.encode())
-        debug_print(self.compose)
+        debug_print(self.log_file, self.compose)
 
     # Function for sending at comamand to module
     def sendATCommOnce(self, command):
@@ -204,7 +207,7 @@ class CellularIoT:
         self.compose = str(command) + "\r"
         ser.reset_input_buffer()
         ser.write(self.compose.encode())
-        debug_print(self.compose)
+        debug_print(self.log_file, self.compose)
         
     # Function for sending data to BG96_AT.
     def sendDataComm(self, command, desired_response, timeout = None):
@@ -220,7 +223,7 @@ class CellularIoT:
             while(ser.inWaiting()):
                 self.response += ser.read(ser.inWaiting()).decode('utf-8', errors='ignore')
             if(self.response.find(desired_response) != -1):
-                debug_print(self.response)
+                debug_print(self.log_file, self.response)
                 break
 
     # Function for sending at command to BG96_AT.
@@ -241,10 +244,10 @@ class CellularIoT:
                     self.response += ser.read(ser.inWaiting()).decode('utf-8', errors='ignore')
                     delay(100)
                 except Exception as e:
-                    debug_print(e.Message)
-                # debug_print(self.response)    
+                    debug_print(self.log_file, e.Message)
+                # debug_print(self.log_file, self.response)    
             if(self.response.find(desired_response) != -1):
-                debug_print(self.response)
+                debug_print(self.log_file, self.response)
                 break
 
     # Function for saving conf. and reset BG96_AT module
@@ -326,23 +329,23 @@ class CellularIoT:
             self.sendATComm("AT+QCFG=\"nwscanseq\",00,1","OK\r\n")
             self.sendATComm("AT+QCFG=\"nwscanmode\",0,1","OK\r\n")
             self.sendATComm("AT+QCFG=\"iotopmode\",2,1","OK\r\n")
-            debug_print("Modem configuration : AUTO_MODE")
-            debug_print("*Priority Table (Cat.M1 -> Cat.NB1 -> GSM)")
+            debug_print(self.log_file, "Modem configuration : AUTO_MODE")
+            debug_print(self.log_file, "*Priority Table (Cat.M1 -> Cat.NB1 -> GSM)")
         elif(mode == self.GSM_MODE):
             self.sendATComm("AT+QCFG=\"nwscanseq\",01,1","OK\r\n")
             self.sendATComm("AT+QCFG=\"nwscanmode\",1,1","OK\r\n")
             self.sendATComm("AT+QCFG=\"iotopmode\",2,1","OK\r\n")
-            debug_print("Modem configuration : GSM_MODE")
+            debug_print(self.log_file, "Modem configuration : GSM_MODE")
         elif(mode == self.CATM1_MODE):
             self.sendATComm("AT+QCFG=\"nwscanseq\",02,1","OK\r\n")
             self.sendATComm("AT+QCFG=\"nwscanmode\",3,1","OK\r\n")
             self.sendATComm("AT+QCFG=\"iotopmode\",0,1","OK\r\n")
-            debug_print("Modem configuration : CATM1_MODE")
+            debug_print(self.log_file, "Modem configuration : CATM1_MODE")
         elif(mode == self.CATNB1_MODE):
             self.sendATComm("AT+QCFG=\"nwscanseq\",03,1","OK\r\n")
             self.sendATComm("AT+QCFG=\"nwscanmode\",3,1","OK\r\n")
             self.sendATComm("AT+QCFG=\"iotopmode\",1,1","OK\r\n")
-            debug_print("Modem configuration : CATNB1_MODE ( NB-IoT )")
+            debug_print(self.log_file, "Modem configuration : CATNB1_MODE ( NB-IoT )")
 
     # Function for getting self.ip_address
     def getIPAddress(self):
@@ -390,7 +393,7 @@ class CellularIoT:
 
     # Function for connecting to base station of operator
     def connectToOperator(self):
-        debug_print("Trying to connect base station of operator...")
+        debug_print(self.log_file, "Trying to connect base station of operator...")
         self.sendATComm("AT+CGATT?","+CGATT: 1\r\n")
         self.getSignalQuality()
 
@@ -440,7 +443,7 @@ class CellularIoT:
                     ser.close()
                     return Decimal(self.response[1])
                 if(self.response.find("\r\n") != -1 and self.response.find("ERROR") != -1 ):
-                    debug_print(self.response)
+                    debug_print(self.log_file, self.response)
                     ser.close()
                     return 0
     
@@ -458,7 +461,7 @@ class CellularIoT:
                     ser.close()
                     return Decimal(self.response[2])
                 if(self.response.find("\r\n") != -1 and self.response.find("ERROR") != -1 ):
-                    debug_print(self.response)
+                    debug_print(self.log_file, self.response)
                     ser.close()
                     return 0
     
@@ -476,7 +479,7 @@ class CellularIoT:
                     ser.close()
                     return round(Decimal(self.response[7])/Decimal('1.609344'), 1)
                 if(self.response.find("\r\n") != -1 and self.response.find("ERROR") != -1 ):
-                    debug_print(self.response)
+                    debug_print(self.log_file, self.response)
                     ser.close()
                     return 0
     
@@ -494,7 +497,7 @@ class CellularIoT:
                     ser.close()
                     return Decimal(self.response[7])
                 if(self.response.find("\r\n") != -1 and self.response.find("ERROR") != -1 ):
-                    debug_print(self.response)
+                    debug_print(self.log_file, self.response)
                     ser.close()
                     return 0
 
@@ -532,14 +535,14 @@ class CellularIoT:
                         d['alt'] = float(self.response[9])
                         d['geo'] = float(self.response[11])
                     except:
-                        debug_print("Trouble parsing NMEA GGA:\nvvv")
-                        debug_print(self.response)
-                        debug_print("^^^")
+                        debug_print(self.log_file, "Trouble parsing NMEA GGA:\nvvv")
+                        debug_print(self.log_file, self.response)
+                        debug_print(self.log_file, "^^^")
                     return d
                 if(self.response.find("\r\n") != -1 and self.response.find("ERROR") != -1 ):
-                    debug_print("ERROR in NMEA GGA response:\nvvv")
-                    debug_print(self.response)
-                    debug_print("^^^")
+                    debug_print(self.log_file, "ERROR in NMEA GGA response:\nvvv")
+                    debug_print(self.log_file, self.response)
+                    debug_print(self.log_file, "^^^")
                     ser.close()
                     return 0
 
@@ -578,15 +581,15 @@ class CellularIoT:
                             d['fix'][self.GNSS_GNS_FIX_CONST[i]] = self.GNSS_OTHERS_FIX[fix[i]]
                     
                     except:
-                        debug_print("Trouble parsing NMEA GNS:\n")
-                        debug_print(self.response)
-                        debug_print("^^^")
+                        debug_print(self.log_file, "Trouble parsing NMEA GNS:\n")
+                        debug_print(self.log_file, self.response)
+                        debug_print(self.log_file, "^^^")
                     return d
 
                 if(self.response.find("\r\n") != -1 and self.response.find("ERROR") != -1 ):
-                    debug_print("ERROR in NMEA GNS response:\nvvv")
-                    debug_print(self.response)
-                    debug_print("^^^")
+                    debug_print(self.log_file, "ERROR in NMEA GNS response:\nvvv")
+                    debug_print(self.log_file, self.response)
+                    debug_print(self.log_file, "^^^")
                     ser.close()
                     return 0
 
@@ -622,14 +625,14 @@ class CellularIoT:
                         d['mag_var'] = mag_var if self.response[11]=='E' else -mag_var 
                         d['fix'] = self.GNSS_OTHERS_FIX[self.response[12][0]] 
                     except:
-                        debug_print("Trouble parsing NMEA RMC:\nvvv")
-                        debug_print(self.response)
-                        debug_print("^^^")
+                        debug_print(self.log_file, "Trouble parsing NMEA RMC:\nvvv")
+                        debug_print(self.log_file, self.response)
+                        debug_print(self.log_file, "^^^")
                     return d
                 if(self.response.find("\r\n") != -1 and self.response.find("ERROR") != -1 ):
-                    debug_print("ERROR in NMEA RMC response:\nvvv")
-                    debug_print(self.response)
-                    debug_print("^^^")
+                    debug_print(self.log_file, "ERROR in NMEA RMC response:\nvvv")
+                    debug_print(self.log_file, self.response)
+                    debug_print(self.log_file, "^^^")
                     ser.close()
                     return 0
  
@@ -680,14 +683,14 @@ class CellularIoT:
                     try:
                         d = self.parseNMEAGSV(self.response)
                     except:
-                        debug_print("Trouble parsing NMEA GSV:\nvvv")
-                        debug_print(self.response)
-                        debug_print("^^^")
+                        debug_print(self.log_file, "Trouble parsing NMEA GSV:\nvvv")
+                        debug_print(self.log_file, self.response)
+                        debug_print(self.log_file, "^^^")
                     return d
                 if(self.response.find("\r\n") != -1 and self.response.find("ERROR") != -1 ):
-                    debug_print("ERROR in NMEA GSV response:\nvvv")
-                    debug_print(self.response)
-                    debug_print("^^^")
+                    debug_print(self.log_file, "ERROR in NMEA GSV response:\nvvv")
+                    debug_print(self.log_file, self.response)
+                    debug_print(self.log_file, "^^^")
                     ser.close()
                     return 0
         return d
@@ -716,14 +719,14 @@ class CellularIoT:
                         d['hdop'] = float(self.response[16])
                         d['vdop'] = float(self.response[17].split("*")[0]) 
                     except:
-                        debug_print("Trouble parsing NMEA GSA:\nvvv")
-                        debug_print(self.response)
-                        debug_print("^^^")
+                        debug_print(self.log_file, "Trouble parsing NMEA GSA:\nvvv")
+                        debug_print(self.log_file, self.response)
+                        debug_print(self.log_file, "^^^")
                     return d
                 if(self.response.find("\r\n") != -1 and self.response.find("ERROR") != -1 ):
-                    debug_print("ERROR in NMEA GSA:\nvvv")
-                    debug_print(self.response)
-                    debug_print("^^^")
+                    debug_print(self.log_file, "ERROR in NMEA GSA:\nvvv")
+                    debug_print(self.log_file, self.response)
+                    debug_print(self.log_file, "^^^")
                     ser.close()
                     return 0
 
@@ -750,14 +753,14 @@ class CellularIoT:
                         d['gnd_speed_km_per_h'] = float(self.response[7])
                         d['fix'] = self.GNSS_OTHERS_FIX[self.response[9][0]] 
                     except:
-                        debug_print("Trouble parsing NMEA VTG:\nvvv")
-                        debug_print(self.response)
-                        debug_print("^^^")
+                        debug_print(self.log_file, "Trouble parsing NMEA VTG:\nvvv")
+                        debug_print(self.log_file, self.response)
+                        debug_print(self.log_file, "^^^")
                     return d
                 if(self.response.find("\r\n") != -1 and self.response.find("ERROR") != -1 ):
-                    debug_print("ERROR in NMEA VTG response:\nvvv")
-                    debug_print(self.response)
-                    debug_print("^^^")
+                    debug_print(self.log_file, "ERROR in NMEA VTG response:\nvvv")
+                    debug_print(self.log_file, self.response)
+                    debug_print(self.log_file, "^^^")
                     ser.close()
                     return 0
 
@@ -943,6 +946,7 @@ class CellularIoTApp(CellularIoT):
         self.serial_port = serial_port
         self.serial_baudrate = serial_baudrate
         self.board = board
+        self.log_file = LOG_DIR + "sixfab_" + serial_port.split("/")[-1] + ".log"
         super(CellularIoTApp, self).__init__(serial_port=self.serial_port, serial_baudrate=self.serial_baudrate, board=self.board)
     
     def __del__(self):
@@ -961,12 +965,12 @@ class CellularIoTApp(CellularIoT):
     # Function for enable BG96 module
     def enable(self):
         GPIO.output(self.BG96_ENABLE,1)
-        debug_print("BG96 module enabled!")
+        debug_print(self.log_file, "BG96 module enabled!")
 
     # Function for powering down BG96 module and all peripherals from voltage regulator 
     def disable(self):
         GPIO.output(self.BG96_ENABLE,0)
-        debug_print("BG96 module disabled!")
+        debug_print(self.log_file, "BG96 module disabled!")
 
     # Function for powering up or down BG96 module
     def powerUp(self):
@@ -974,7 +978,7 @@ class CellularIoTApp(CellularIoT):
         delay(1000)
         GPIO.output(self.BG96_POWERKEY,0)
         delay(2000)
-        debug_print("BG96 module powered up!")
+        debug_print(self.log_file, "BG96 module powered up!")
         
     # Function for getting modem power status
     def getModemStatus(self):
