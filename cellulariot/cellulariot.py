@@ -928,7 +928,7 @@ class CellularIoTApp(CellularIoT):
         self.board = board
         self.log_file = LOG_DIR + "sixfab_" + serial_port.split("/")[-1] + ".log"
         self.verbose = verbose
-        super(CellularIoTApp, self).__init__(serial_port=self.serial_port, serial_baudrate=self.serial_baudrate, board=self.board)
+        super(CellularIoTApp, self).__init__(serial_port=self.serial_port, serial_baudrate=self.serial_baudrate, board=self.board, verbose=self.verbose)
     
     def __del__(self):
         self.clearGPIOs()
