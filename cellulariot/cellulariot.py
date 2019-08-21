@@ -17,7 +17,8 @@ from .MMA8452Q import MMA8452Q
 
 # global variables
 TIMEOUT = 3 # seconds
-MAX_ATTEMPTS = 5
+MAX_GNSS_ATTEMPTS = 5
+MAX_AT_ATTEMPTS = 1000
 LOG_DIR = '/data/log/'
 os.makedirs(LOG_DIR, exist_ok=True)
 ser = serial.Serial()
@@ -227,13 +228,15 @@ class CellularIoT:
                 break
 
     # Function for sending at command to BG96_AT.
-    def sendATComm(self, command, desired_response, timeout = None):
+    def sendATComm(self, command, desired_response, timeout=None, max_attempts=MAX_AT_ATTEMPTS):
         if timeout is None:
             timeout = self.timeout
         self.sendATCommOnce(command)
         f_debug = False
         timer = millis()
-        while 1:
+        ctr_attempts = 0
+        while ctr_attempts < max_attempts:
+            ctr_attempts += 1
             if( millis() - timer > timeout): 
                 self.sendATCommOnce(command)
                 timer = millis()
@@ -648,7 +651,7 @@ class CellularIoT:
         return d
 
     # Function for getting NMEA GSV sentence
-    def getNMEAGSV(self, n_attempts=MAX_ATTEMPTS):
+    def getNMEAGSV(self, n_attempts=MAX_GNSS_ATTEMPTS):
         self.sendATCommOnce("AT+QGPSGNMEA=\"GSV\"")
         timer = millis()
         init_timer = timer
