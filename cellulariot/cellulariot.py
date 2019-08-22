@@ -744,6 +744,33 @@ class CellularIoT:
                     ser.close()
                     return 0
 
+    # Function for updating the GPS One XTRA file
+    def updGPSXTRA(self, apn="internet", apn_un="", apn_pw="", auth=0):
+        self.sendATComm("ATI1", "BG96")
+        self.sendATComm("AT+CMEE=2", "OK")
+        self.sendATCommOnce("AT+QGPSEND")
+        self.sendATComm("AT+QGPSXTRA=1", "OK")
+        self.sendATComm("AT+CFUN=1")
+        self.sendATComm("AT+QHTTPCFG=\"contextid\",1", "OK")
+        mess_qicsgp = ("AT+QICSGP=1,1,\"" + apn + "\",\"" + apn_un + "\",\"" +
+            apn_pw + "\"," + str(auth))
+        self.sendATComm(mess_qicsgp, "OK")
+        self.sendATComm("AT+QIACT=1", "OK")
+        self.sendATComm("AT+QIACT?", ".")
+        self.sendATComm("AT+QHTTPURL=40,80", "CONNECT")
+        self.sendATComm("http://xtrapath1.izatcloud.net/xtra2.bin", "OK")
+        self.sendATComm("AT+QHTTPGET=80", "QHTTPGET")
+        self.sendATComm("AT+QHTTPREADFILE=\"UFS:xtra2.bin\"", "OK")
+        cur_time = time.localtime()
+        mess_xtratime = ("AT+QGPSXTRATIME=0,\"" + str(cur_time.tm_year) + "/" +
+            "{:02}".format(cur_time.tm_mon) + "/" +
+            "{:02}".format(cur_time.tm_mday) + "," +
+            "{:02}".format(cur_time.tm_hour) + ":" +
+            "{:02}".format(cur_time.tm_min) + ":00\",1,1,5") 
+        self.sendATComm(mess_xtratime)
+        self.sendATComm("AT+QGPSXTRADATA=\"UFS:xtra2.bin\"")
+        self.sendATCommOnce("AT+QGPS=1")
+
     #******************************************************************************************
     #*** TCP & UDP Protocols Functions ********************************************************
     #******************************************************************************************
