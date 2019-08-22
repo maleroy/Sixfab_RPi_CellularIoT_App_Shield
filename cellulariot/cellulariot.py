@@ -789,9 +789,9 @@ class CellularIoT:
             return False
         
         self.sendATComm("AT+QIACT=1", "OK")
-        time.sleep(80)
+        time.sleep(0.5)
         
-        self.sendATComm("AT+QIACT?", ".")
+        self.sendATComm("AT+QIACT?", "QIACT: 1")
         time.sleep(0.5)
         
         self.sendATComm("AT+QHTTPURL=40,80", "CONNECT")
