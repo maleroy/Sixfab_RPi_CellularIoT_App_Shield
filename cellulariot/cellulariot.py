@@ -749,10 +749,7 @@ class CellularIoT:
     def updGPSXTRA(self, apn="internet", apn_un="", apn_pw="", auth=0):
         self.sendATComm("ATE0", "OK")
         time.sleep(0.5)
-        
-        self.sendATComm("ATI1", "BG96")
-        time.sleep(0.5)
-        
+
         self.sendATComm("AT+CMEE=2", "OK")
         time.sleep(0.5)
         
@@ -762,6 +759,10 @@ class CellularIoT:
         self.sendATComm("AT+QGPSXTRA=1", "OK")
         time.sleep(0.5)
         
+        if self.verbose:
+            self.sendATCommOnce("AT+QGPSXTRADATA?")
+            time.sleep(0.5)
+                
         self.sendATComm("AT+CFUN=1", "OK")
         time.sleep(0.5)
         
@@ -815,7 +816,11 @@ class CellularIoT:
         
         self.sendATComm("AT+QGPSXTRADATA=\"UFS:xtra2.bin\"", "OK")
         time.sleep(0.5)
-        
+
+        if self.verbose:
+            self.sendATCommOnce("AT+QGPSXTRADATA?")
+            time.sleep(0.5)
+                        
         self.sendATCommOnce("AT+QGPS=1")
         
         return True
