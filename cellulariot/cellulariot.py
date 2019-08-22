@@ -18,7 +18,7 @@ from .MMA8452Q import MMA8452Q
 # global variables
 TIMEOUT = 3 # seconds
 MAX_GNSS_ATTEMPTS = 5
-MAX_UPD_ATTEMPTS = 100
+MAX_UPD_ATTEMPTS = 20
 MAX_AT_ATTEMPTS = 1000
 LOG_DIR = '/data/log/'
 os.makedirs(LOG_DIR, exist_ok=True)
@@ -747,7 +747,10 @@ class CellularIoT:
                     return 0
 
     # Function for updating the GPS One XTRA file
-    def updGPSXTRA(self, apn="internet", apn_un="", apn_pw="", auth=0):
+    def updGPSXTRA(self, apn="internet", apn_un="", apn_pw="", auth=0, n=None):
+        if n is None:
+            n = MAX_UPD_ATTEMPTS
+
         self.sendATComm("ATE0", "OK")
         time.sleep(0.5)
 
@@ -761,7 +764,7 @@ class CellularIoT:
         time.sleep(0.5)
         
         if self.verbose:
-            self.sendATCommOnce("AT+QGPSXTRADATA?")
+            self.sendATComm("AT+QGPSXTRADATA?", "QGPSXTRADATA")
             time.sleep(0.5)
                 
         self.sendATComm("AT+CFUN=1", "OK")
@@ -780,7 +783,7 @@ class CellularIoT:
         
         n_attempts = 0
         internet_bool = False
-        while not internet_bool and n_attempts<MAX_UPD_ATTEMPTS:
+        while not internet_bool and n_attempts<n:
             n_attempts += 1
             internet_bool = self.sendATComm("AT+CGATT?", "CGATT: 1")
             time.sleep(1)
@@ -819,7 +822,7 @@ class CellularIoT:
         time.sleep(0.5)
 
         if self.verbose:
-            self.sendATCommOnce("AT+QGPSXTRADATA?")
+            self.sendATComm("AT+QGPSXTRADATA?", "QGPSXTRADATA")
             time.sleep(0.5)
                         
         self.sendATCommOnce("AT+QGPS=1")
