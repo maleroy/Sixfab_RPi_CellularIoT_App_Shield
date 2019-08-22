@@ -778,14 +778,14 @@ class CellularIoT:
         self.sendATComm(mess_qicsgp, "OK")
         time.sleep(0.5)
         
-        self.response = -1
         n_attempts = 0
-        while not self.response==1 and n_attempts<MAX_UPD_ATTEMPTS:
+        internet_bool = False
+        while not internet_bool and n_attempts<MAX_UPD_ATTEMPTS:
             n_attempts += 1
-            self.sendATCommOnce("AT+CGATT?")
+            internet_bool = self.sendATComm("AT+CGATT?", "CGATT: 1")
             time.sleep(1)
         
-        if n_attempts>=MAX_UPD_ATTEMPTS:
+        if not internet_bool:
             return False
         
         self.sendATComm("AT+QIACT=1", "OK")
