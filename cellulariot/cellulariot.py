@@ -746,21 +746,50 @@ class CellularIoT:
 
     # Function for updating the GPS One XTRA file
     def updGPSXTRA(self, apn="internet", apn_un="", apn_pw="", auth=0):
+        self.sendATComm("ATE0", "OK")
+        time.sleep(0.5)
+        
         self.sendATComm("ATI1", "BG96")
+        time.sleep(0.5)
+        
         self.sendATComm("AT+CMEE=2", "OK")
+        time.sleep(0.5)
+        
         self.sendATCommOnce("AT+QGPSEND")
+        time.sleep(0.5)
+        
         self.sendATComm("AT+QGPSXTRA=1", "OK")
+        time.sleep(0.5)
+        
         self.sendATComm("AT+CFUN=1", "OK")
+        time.sleep(0.5)
+        
         self.sendATComm("AT+QHTTPCFG=\"contextid\",1", "OK")
+        time.sleep(0.5)
+        
         mess_qicsgp = ("AT+QICSGP=1,1,\"" + apn + "\",\"" + apn_un + "\",\"" +
             apn_pw + "\"," + str(auth))
         self.sendATComm(mess_qicsgp, "OK")
+        time.sleep(0.5)
+        
         self.sendATComm("AT+QIACT=1", "OK")
+        time.sleep(80)
+        
         self.sendATComm("AT+QIACT?", ".")
+        time.sleep(0.5)
+        
         self.sendATComm("AT+QHTTPURL=40,80", "CONNECT")
+        time.sleep(0.5)
+        
         self.sendATComm("http://xtrapath1.izatcloud.net/xtra2.bin", "OK")
+        time.sleep(80)
+        
         self.sendATComm("AT+QHTTPGET=80", "QHTTPGET")
+        time.sleep(0.5)
+        
         self.sendATComm("AT+QHTTPREADFILE=\"UFS:xtra2.bin\"", "OK")
+        time.sleep(0.5)
+        
         cur_time = time.localtime()
         mess_xtratime = ("AT+QGPSXTRATIME=0,\"" + str(cur_time.tm_year) + "/" +
             "{:02}".format(cur_time.tm_mon) + "/" +
@@ -768,7 +797,11 @@ class CellularIoT:
             "{:02}".format(cur_time.tm_hour) + ":" +
             "{:02}".format(cur_time.tm_min) + ":00\",1,1,5") 
         self.sendATComm(mess_xtratime)
+        time.sleep(0.5)
+        
         self.sendATComm("AT+QGPSXTRADATA=\"UFS:xtra2.bin\"", "OK")
+        time.sleep(0.5)
+        
         self.sendATCommOnce("AT+QGPS=1")
 
     #******************************************************************************************
