@@ -16,6 +16,8 @@ from .SDL_Pi_HDC1000 import *
 from .MMA8452Q import MMA8452Q
 
 # global variables
+SUPER_SHORT_TIMEOUT = 0.5
+SHORT_TIMEOUT = 1
 TIMEOUT = 3 # seconds
 MAX_GNSS_ATTEMPTS = 5
 MAX_UPD_ATTEMPTS = 20
@@ -752,62 +754,62 @@ class CellularIoT:
             n = MAX_UPD_ATTEMPTS
 
         self.sendATComm("ATE0", "OK")
-        time.sleep(0.5)
+        time.sleep(SHORT_TIMEOUT)
 
         self.sendATComm("AT+CMEE=2", "OK")
-        time.sleep(0.5)
+        time.sleep(SHORT_TIMEOUT)
         
         self.sendATCommOnce("AT+QGPSEND")
-        time.sleep(0.5)
+        time.sleep(SHORT_TIMEOUT)
         
         self.sendATComm("AT+QGPSXTRA=1", "OK")
-        time.sleep(0.5)
+        time.sleep(SHORT_TIMEOUT)
         
         if self.verbose:
             self.sendATComm("AT+QGPSXTRADATA?", "QGPSXTRADATA")
-            time.sleep(0.5)
+            time.sleep(SHORT_TIMEOUT)
                 
         self.sendATComm("AT+CFUN=1", "OK")
-        time.sleep(0.5)
+        time.sleep(SHORT_TIMEOUT)
         
         self.sendATComm("AT+QIDEACT=1", "OK")
-        time.sleep(0.5)
+        time.sleep(SHORT_TIMEOUT)
 
         self.sendATComm("AT+QHTTPCFG=\"contextid\",1", "OK")
-        time.sleep(0.5)
+        time.sleep(SHORT_TIMEOUT)
         
         mess_qicsgp = ("AT+QICSGP=1,1,\"" + apn + "\",\"" + apn_un + "\",\"" +
             apn_pw + "\"," + str(auth))
         self.sendATComm(mess_qicsgp, "OK")
-        time.sleep(0.5)
+        time.sleep(SHORT_TIMEOUT)
         
         n_attempts = 0
         internet_bool = False
         while not internet_bool and n_attempts<n:
             n_attempts += 1
             internet_bool = self.sendATComm("AT+CGATT?", "CGATT: 1")
-            time.sleep(1)
+            time.sleep(SHORT_TIMEOUT)
         
         if not internet_bool:
             return False
         
         self.sendATComm("AT+QIACT=1", "OK")
-        time.sleep(0.5)
+        time.sleep(TIMEOUT)
         
-        self.sendATComm("AT+QIACT?", "QIACT: 1")
-        time.sleep(0.5)
+        self.sendATComm("AT+QIACT?", "QIACT")
+        time.sleep(SHORT_TIMEOUT)
         
         self.sendATComm("AT+QHTTPURL=40,80", "CONNECT")
-        time.sleep(0.5)
+        time.sleep(SHORT_TIMEOUT)
         
         self.sendATComm("http://xtrapath1.izatcloud.net/xtra2.bin", "OK")
         time.sleep(80)
         
         self.sendATComm("AT+QHTTPGET=80", "QHTTPGET")
-        time.sleep(0.5)
+        time.sleep(SHORT_TIMEOUT)
         
         self.sendATComm("AT+QHTTPREADFILE=\"UFS:xtra2.bin\"", "OK")
-        time.sleep(0.5)
+        time.sleep(SHORT_TIMEOUT)
         
         cur_time = time.localtime()
         mess_xtratime = ("AT+QGPSXTRATIME=0,\"" + str(cur_time.tm_year) + "/" +
@@ -816,14 +818,14 @@ class CellularIoT:
             "{:02}".format(cur_time.tm_hour) + ":" +
             "{:02}".format(cur_time.tm_min) + ":00\",1,1,5") 
         self.sendATComm(mess_xtratime)
-        time.sleep(0.5)
+        time.sleep(SHORT_TIMEOUT)
         
         self.sendATComm("AT+QGPSXTRADATA=\"UFS:xtra2.bin\"", "OK")
-        time.sleep(0.5)
+        time.sleep(SHORT_TIMEOUT)
 
         if self.verbose:
             self.sendATComm("AT+QGPSXTRADATA?", "QGPSXTRADATA")
-            time.sleep(0.5)
+            time.sleep(SHORT_TIMEOUT)
                         
         self.sendATCommOnce("AT+QGPS=1")
         
