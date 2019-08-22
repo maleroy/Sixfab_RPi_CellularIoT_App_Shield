@@ -768,7 +768,7 @@ class CellularIoT:
             "{:02}".format(cur_time.tm_hour) + ":" +
             "{:02}".format(cur_time.tm_min) + ":00\",1,1,5") 
         self.sendATComm(mess_xtratime)
-        self.sendATComm("AT+QGPSXTRADATA=\"UFS:xtra2.bin\"")
+        self.sendATComm("AT+QGPSXTRADATA=\"UFS:xtra2.bin\"", "OK")
         self.sendATCommOnce("AT+QGPS=1")
 
     #******************************************************************************************
