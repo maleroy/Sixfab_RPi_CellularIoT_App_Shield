@@ -750,7 +750,7 @@ class CellularIoT:
         self.sendATComm("AT+CMEE=2", "OK")
         self.sendATCommOnce("AT+QGPSEND")
         self.sendATComm("AT+QGPSXTRA=1", "OK")
-        self.sendATComm("AT+CFUN=1")
+        self.sendATComm("AT+CFUN=1", "OK")
         self.sendATComm("AT+QHTTPCFG=\"contextid\",1", "OK")
         mess_qicsgp = ("AT+QICSGP=1,1,\"" + apn + "\",\"" + apn_un + "\",\"" +
             apn_pw + "\"," + str(auth))
