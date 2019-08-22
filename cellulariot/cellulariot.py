@@ -18,6 +18,7 @@ from .MMA8452Q import MMA8452Q
 # global variables
 TIMEOUT = 3 # seconds
 MAX_GNSS_ATTEMPTS = 5
+MAX_UPD_ATTEMPTS = 100
 MAX_AT_ATTEMPTS = 1000
 LOG_DIR = '/data/log/'
 os.makedirs(LOG_DIR, exist_ok=True)
@@ -764,6 +765,9 @@ class CellularIoT:
         self.sendATComm("AT+CFUN=1", "OK")
         time.sleep(0.5)
         
+        self.sendATComm("AT+QIDEACT=1", "OK")
+        time.sleep(0.5)
+
         self.sendATComm("AT+QHTTPCFG=\"contextid\",1", "OK")
         time.sleep(0.5)
         
@@ -771,6 +775,16 @@ class CellularIoT:
             apn_pw + "\"," + str(auth))
         self.sendATComm(mess_qicsgp, "OK")
         time.sleep(0.5)
+        
+        self.response = -1
+        n_attempts = 0
+        while not self.response==1 and n_attempts<MAX_UPD_ATTEMPTS:
+            n_attempts += 1
+            self.sendATCommOnce("AT+CGATT?")
+            time.sleep(1)
+        
+        if n_attempts>=MAX_UPD_ATTEMPTS:
+            return False
         
         self.sendATComm("AT+QIACT=1", "OK")
         time.sleep(80)
@@ -803,6 +817,8 @@ class CellularIoT:
         time.sleep(0.5)
         
         self.sendATCommOnce("AT+QGPS=1")
+        
+        return True
 
     #******************************************************************************************
     #*** TCP & UDP Protocols Functions ********************************************************
