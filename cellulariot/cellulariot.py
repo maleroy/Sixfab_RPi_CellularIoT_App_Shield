@@ -253,7 +253,8 @@ class CellularIoT:
                 # if self.verbose: debug_print(self.log_file, self.response)    
             if(self.response.find(desired_response) != -1):
                 if self.verbose: debug_print(self.log_file, self.response)
-                break
+                return True
+        return False
 
     # Function for saving conf. and reset BG96_AT module
     def resetModule(self):
