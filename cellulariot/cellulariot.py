@@ -778,6 +778,10 @@ class CellularIoT:
         self.sendATComm("AT+QHTTPCFG=\"contextid\",1", "OK")
         time.sleep(SHORT_TIMEOUT)
         
+        mess_cgdcont = "AT+CGDCONT=1,\"IP\",\"" + apn + "\""
+        self.sendATComm(mess_cgdcont, "OK")
+        time.sleep(SHORT_TIMEOUT)
+
         mess_qicsgp = ("AT+QICSGP=1,1,\"" + apn + "\",\"" + apn_un + "\",\"" +
             apn_pw + "\"," + str(auth))
         self.sendATComm(mess_qicsgp, "OK")
