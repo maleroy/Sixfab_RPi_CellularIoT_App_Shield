@@ -33,7 +33,7 @@ ser = serial.Serial()
 # Function for printing debug message 
 def debug_print(log_file, message):
     with open(log_file, 'a') as f:
-        f.write(str(message)+"\n")
+        f.write(time.asctime() + ": " + str(message)+"\n")
 
 # Function for getting time as miliseconds
 def millis():
